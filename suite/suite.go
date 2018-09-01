@@ -55,6 +55,20 @@ func (suite *Suite) Assert() *assert.Assertions {
 	return suite.Assertions
 }
 
+// Run provides suite functionality around golang subtests.  It should be
+// called in place of t.Run(name, func(t *testing.T)) in test suite code
+// to expose setup and teardown functionality for each subtest.  The passed-in
+// func will be executed as a subtest with a fresh instance of t.  Provides
+// compatibility with go test pkg -run TestSuite/TestName/SubTestName.
+func (suite *Suite) Run(name string, subtest func()) {
+	oldT := suite.T()
+	oldT.Run(name, func(t *testing.T) {
+		suite.SetT(t)
+		subtest()
+		suite.SetT(oldT)
+	})
+}
+
 // Run takes a testing suite and runs all of the tests attached
 // to it.
 func Run(t *testing.T, suite TestingSuite) {
